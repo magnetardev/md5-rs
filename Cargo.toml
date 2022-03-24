@@ -2,6 +2,11 @@
 name = "md5-rs"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+readme = "README.md"
+description = "A streamable MD5 implementation, using no_std"
+homepage = "https://github.com/magnetardev/md5-rs"
+repository = "https://github.com/magnetardev/md5-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
