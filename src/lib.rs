@@ -8,7 +8,7 @@ pub use consts::{DIGEST_LEN, INPUT_BUFFER_LEN};
 #[derive(Debug)]
 pub struct Context {
     /// The total size of the recieved input
-    size: u64,
+    pub size: u64,
     /// The input buffer
     ///
     /// Note: only access directly if you're writing to it, (e.g. if you want to write to it via Wasm memory)
@@ -27,18 +27,6 @@ impl Context {
             digest: [0; DIGEST_LEN],
             buffer: [A, B, C, D],
         }
-    }
-
-    /// Process the bytes in the input buffer
-    ///
-    /// Note: this should only be used if you're writing to the `Context.input` array directly (e.g. if you're writing to it via Wasm memory).
-    /// Otherwise, use `Context::read`, but do note that it copies the data.
-    pub fn update(&mut self, bytes_written: usize) {
-        self.size += bytes_written as u64;
-        if self.size % (BLOCK_SIZE as u64) != 0 {
-            return;
-        }
-        self.step();
     }
 
     /// Process the bytes in `buf`
@@ -61,7 +49,7 @@ impl Context {
     }
 
     /// Process a 512-bit chunk
-    fn step(&mut self) {
+    pub fn step(&mut self) {
         let [mut a, mut b, mut c, mut d] = self.buffer;
         let mut e: u32;
         let mut g: usize;

@@ -1,5 +1,6 @@
 use core::ops::{BitAnd, BitOr, BitXor, Not};
 
+#[inline]
 pub fn rotate_u32_left(x: u32, n: u32) -> u32 {
     (x << n) | (x >> (32 - n))
 }
@@ -7,8 +8,7 @@ pub fn rotate_u32_left(x: u32, n: u32) -> u32 {
 #[inline]
 pub fn f<T>(x: T, y: T, z: T) -> T
 where
-    T: Copy + BitAnd + Not + BitOr,
-    T: Not<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
+    T: Copy + Not<Output = T> + BitAnd<Output = T> + BitOr<Output = T>,
 {
     (x & y) | (!x & z)
 }
