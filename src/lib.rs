@@ -2,7 +2,8 @@
 mod consts;
 mod util;
 
-pub use consts::*;
+use consts::*;
+pub use consts::{DIGEST_LEN, INPUT_BUFFER_LEN};
 
 #[derive(Debug)]
 pub struct Context {
@@ -28,7 +29,7 @@ impl Context {
     /// Otherwise, use `Context::read`, but do note that it copies the data.
     pub fn update(&mut self, bytes_written: usize) {
         self.size += bytes_written as u64;
-        if self.size % 64 != 0 {
+        if self.size % (BLOCK_SIZE as u64) != 0 {
             return;
         }
         self.step();
@@ -36,13 +37,12 @@ impl Context {
 
     /// Process the bytes in `buf`
     pub fn read(&mut self, buf: &[u8]) {
-        let mut offset = (self.size % 64) as usize;
+        let mut offset = (self.size % BLOCK_SIZE as u64) as usize;
         self.size += buf.len() as u64;
         for i in 0..buf.len() {
             self.input[offset] = buf[i];
             offset += 1;
-
-            if offset % 64 == 0 {
+            if offset % BLOCK_SIZE == 0 {
                 self.step();
             }
         }
@@ -93,11 +93,11 @@ impl Context {
     /// Closes the reader and returns the digest
     pub fn finish(mut self) -> [u8; DIGEST_LEN] {
         // Insert the padding
-        let offset = (self.size % 64) as usize;
+        let offset = (self.size % (BLOCK_SIZE as u64)) as usize;
         let padding_len: usize = if offset < 56 {
             56 - offset
         } else {
-            (56 + 64) - offset
+            (56 + BLOCK_SIZE) - offset
         };
         self.read(&PADDING[..padding_len]);
         self.size -= padding_len as u64;
