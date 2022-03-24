@@ -15,4 +15,4 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Publish
-      run: cargo release
+      run: cargo publish 

@@ -7,9 +7,15 @@ pub use consts::{DIGEST_LEN, INPUT_BUFFER_LEN};
 
 #[derive(Debug)]
 pub struct Context {
+    /// The total size of the recieved input
     size: u64,
+    /// The input buffer
+    ///
+    /// Note: only access directly if you're writing to it, (e.g. if you want to write to it via Wasm memory)
     pub input: [u8; INPUT_BUFFER_LEN],
+    /// The buffer for the digest
     digest: [u8; DIGEST_LEN],
+    /// The working buffer
     buffer: [u32; 4],
 }
 
@@ -36,6 +42,12 @@ impl Context {
     }
 
     /// Process the bytes in `buf`
+    ///
+    /// Usage:
+    /// ```rs
+    /// let mut ctx = Context::new();
+    /// ctx.read(b"hello world");
+    /// ```
     pub fn read(&mut self, buf: &[u8]) {
         let mut offset = (self.size % BLOCK_SIZE as u64) as usize;
         self.size += buf.len() as u64;
@@ -91,6 +103,15 @@ impl Context {
     }
 
     /// Closes the reader and returns the digest
+    ///
+    /// Usage:
+    /// ```rs
+    /// let mut ctx = Context::new();
+    /// ctx.read(b"hello world");
+    /// let digest = ctx.finish();
+    /// // prints the actual hash bytes, you need to do the hex string yourself
+    /// println!("{:?}", digest);
+    /// ```
     pub fn finish(mut self) -> [u8; DIGEST_LEN] {
         // Insert the padding
         let offset = (self.size % (BLOCK_SIZE as u64)) as usize;
