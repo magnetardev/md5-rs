@@ -24,8 +24,8 @@ impl Context {
 
     /// Process the bytes in the input buffer
     ///
-    /// Note: this should only be used if you're writing to the Context.input array directly (e.g. if you're writing to it via Wasm memory).
-    /// Otherwise, use `Context::read`, but do note that it clones the data.
+    /// Note: this should only be used if you're writing to the `Context.input` array directly (e.g. if you're writing to it via Wasm memory).
+    /// Otherwise, use `Context::read`, but do note that it copies the data.
     pub fn update(&mut self, bytes_written: usize) {
         self.size += bytes_written as u64;
         if self.size % 64 != 0 {
@@ -34,6 +34,7 @@ impl Context {
         self.step();
     }
 
+    /// Process the bytes in `buf`
     pub fn read(&mut self, buf: &[u8]) {
         let mut offset = (self.size % 64) as usize;
         self.size += buf.len() as u64;
@@ -82,6 +83,8 @@ impl Context {
             c = b;
             b = b.wrapping_add(util::rotate_u32_left(f, S[i]));
         }
+
+        // update buffer
         self.buffer[0] = self.buffer[0].wrapping_add(a);
         self.buffer[1] = self.buffer[1].wrapping_add(b);
         self.buffer[2] = self.buffer[2].wrapping_add(c);
@@ -132,13 +135,56 @@ mod test {
 
     macro_rules! hash_eq {
         ($input:expr, $hash:expr) => {
-            assert_eq!(compute_string($input).as_str(), $hash);
+            assert_eq!(compute_string($input).as_str(), $hash)
         };
     }
 
     #[test]
     fn empty() {
-        hash_eq!(b"", "d41d8cd98f00b204e9800998ecf8427e");
+        hash_eq!(b"", "d41d8cd98f00b204e9800998ecf8427e")
+    }
+
+    #[test]
+    fn a() {
+        hash_eq!(b"a", "0cc175b9c0f1b6a831c399e269772661")
+    }
+
+    #[test]
+    fn abc() {
+        hash_eq!(b"abc", "900150983cd24fb0d6963f7d28e17f72")
+    }
+
+    #[test]
+    fn abcdefghijklmnopqrstuvwxyz() {
+        hash_eq!(
+            b"abcdefghijklmnopqrstuvwxyz",
+            "c3fcd3d76192e4007dfb496cca67e13b"
+        )
+    }
+
+    #[test]
+    fn foo() {
+        hash_eq!(b"foo", "acbd18db4cc2f85cedef654fccc4a4d8")
+    }
+
+    #[test]
+    fn bar() {
+        hash_eq!(b"bar", "37b51d194a7513e45b56f6524f2d51f2")
+    }
+
+    #[test]
+    fn baz() {
+        hash_eq!(b"baz", "73feffa4b7f6bb68e44cf984c85f6e88")
+    }
+
+    #[test]
+    fn foobar() {
+        hash_eq!(b"foobar", "3858f62230ac3c915f300c664312c63f")
+    }
+
+    #[test]
+    fn foobarbaz() {
+        hash_eq!(b"foobarbaz", "6df23dc03f9b54cc38a0fc1483df6e21")
     }
 
     #[test]
@@ -146,6 +192,11 @@ mod test {
         hash_eq!(
             b"The quick brown fox jumps over the lazy dog",
             "9e107d9d372bb6826bd81d3542a419d6"
-        );
+        )
+    }
+
+    #[test]
+    fn hello_world() {
+        hash_eq!(b"Hello, world", "bc6e6f16b8a077ef5fbc8d59d0b931b9")
     }
 }
