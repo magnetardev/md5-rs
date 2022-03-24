@@ -43,7 +43,6 @@ impl Context {
             offset += 1;
 
             if offset % 64 == 0 {
-                self.input.copy_from_slice(buf);
                 self.step();
             }
         }
