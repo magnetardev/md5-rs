@@ -42,7 +42,8 @@ impl Context {
         for i in 0..buf.len() {
             self.input[offset] = buf[i];
             offset += 1;
-            if offset % BLOCK_SIZE == 0 {
+            offset %= BLOCK_SIZE;
+            if offset == 0 {
                 self.step();
             }
         }
